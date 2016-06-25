@@ -1,4 +1,4 @@
-import * as R from "ramda";
+var R = require( "ramda" );
 
 export function State(run){
     if (!(this instanceof State)) {
@@ -30,7 +30,7 @@ State.read = f => State( model => [ f(model), model ] );
 
 State.write = f => State( model => f(model) );
 
-export default function( x ){
+function Momon( x ){
 
     let model = x;
 
@@ -60,3 +60,7 @@ export default function( x ){
     }
 
 }
+
+exports.State = State;
+exports.Momon = Momon;
+
