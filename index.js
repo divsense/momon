@@ -1,6 +1,6 @@
 var R = require( "ramda" );
 
-export function State(run){
+function State(run){
     if (!(this instanceof State)) {
         return new State(run);
     }
@@ -36,6 +36,8 @@ function Momon( x ){
 
     const get = State.of;
 
+    const update = state => state.run( model );
+
     const updateWith = R.curry(( fn, state ) => {
 
         const res = (state || State.of({})).run( model );
@@ -44,14 +46,9 @@ function Momon( x ){
 
         fn( model );
 
-        return State.of( res[0] );
+        return get( res[0] );
 
     });
-
-    const update = state => {
-        model = state.run( model )[ 1 ];
-        return model;
-    }
 
     return {
         get,
