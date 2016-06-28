@@ -1,6 +1,6 @@
 {
   "name": "momon",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Model Monad",
   "main": "index.js",
   "scripts": {
