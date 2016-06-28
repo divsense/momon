@@ -10,9 +10,9 @@ function State(run){
 State.prototype.chain = function(f){
     var state = this;
     return new State(function(model) {
-        let [val, model_] = state.run(model);
-        let state_ = f(val);
-        return state_.run(model_);
+        var res = state.run(model);
+        var state_ = f(res[0]);
+        return state_.run(res[1]);
     });
 }
 
@@ -32,7 +32,7 @@ State.write = f => State( model => f(model) );
 
 function Momon( x ){
 
-    let model = x;
+    var model = x;
 
     const get = State.of;
 
@@ -51,9 +51,9 @@ function Momon( x ){
     });
 
     return {
-        get,
-        update,
-        updateWith
+		get: get,
+		update: update,
+        updateWith: updateWith
     }
 
 }
