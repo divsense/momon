@@ -36,15 +36,27 @@ function Momon( x ){
 
     const get = State.of;
 
-    const update = state => state.run( model );
+//    const update = state => state.run( model );
 
-    const updateWith = R.curry(( fn, state ) => {
+    const run = R.curry(( fn, state ) => {
 
         const res = (state || State.of({})).run( model );
 
         model = res[1];
 
-        fn( model );
+        fn && fn( model );
+
+        return res[0];
+
+    });
+
+    const update = R.curry(( fn, state ) => {
+
+        const res = (state || State.of({})).run( model );
+
+        model = res[1];
+
+        fn && fn( model );
 
         return get( res[0] );
 
@@ -52,8 +64,8 @@ function Momon( x ){
 
     return {
 		get: get,
-		update: update,
-        updateWith: updateWith
+        run: run,
+		update: update
     }
 
 }
