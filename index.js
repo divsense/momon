@@ -34,38 +34,30 @@ function Momon( x ){
 
     var model = x;
 
-    const get = State.of;
+    var of = State.of;
 
-//    const update = state => state.run( model );
-
-    const run = R.curry(( fn, state ) => {
-
-        const res = (state || State.of({})).run( model );
-
+    var run = state => {
+        var res = state.run( model );
         model = res[1];
-
-        fn && fn( model );
-
         return res[0];
+    };
 
-    });
-
-    const update = R.curry(( fn, state ) => {
-
-        const res = (state || State.of({})).run( model );
-
+    var update = R.curry(( fn, state ) => {
+        var res = (state || State.of({})).run( model );
         model = res[1];
-
-        fn && fn( model );
-
-        return get( res[0] );
-
+        fn( model );
+        return of( res[0] );
     });
+
+    var read = R.curry((fn, state) => R.chain(val => State.read(model => fn(val, model)), state));
+    var write = R.curry((fn, state) => R.chain(val => State.write(model => [val, fn(val, model)]), state));
 
     return {
-		get: get,
+		of: of,
+        read: read,
+        write: write,
+		update: update,
         run: run,
-		update: update
     }
 
 }
