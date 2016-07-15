@@ -49,14 +49,18 @@ function Momon( x ){
         return of( res[0] );
     });
 
+    var tap = R.curry((fn, state) => R.chain(val => State.read(model => {fn(model,val);return val}), state));
     var read = R.curry((fn, state) => R.chain(val => State.read(model => fn(val, model)), state));
     var write = R.curry((fn, state) => R.chain(val => State.write(model => [val, fn(val, model)]), state));
 
     return {
 		of: of,
+		begin: of,
         read: read,
         write: write,
 		update: update,
+		tap: tap,
+        end: run,
         run: run,
     }
 
