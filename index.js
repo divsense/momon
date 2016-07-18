@@ -30,13 +30,13 @@ State.read = f => State( model => [ f(model), model ] );
 
 State.write = f => State( model => f(model) );
 
-function Momon( x ){
+function Mond( x ){
 
     var model = x;
 
-    var of = State.of;
+    var begin = State.of;
 
-    var run = state => {
+    var end = state => {
         var res = state.run( model );
         model = res[1];
         return res[0];
@@ -46,7 +46,7 @@ function Momon( x ){
         var res = (state || State.of({})).run( model );
         model = res[1];
         fn( model );
-        return of( res[0] );
+        return begin( res[0] );
     });
 
     var tap = R.curry((fn, state) => R.chain(val => State.read(model => {fn(model,val);return val}), state));
@@ -54,18 +54,16 @@ function Momon( x ){
     var write = R.curry((fn, state) => R.chain(val => State.write(model => [val, fn(val, model)]), state));
 
     return {
-		of: of,
-		begin: of,
+		begin: begin,
         read: read,
         write: write,
 		update: update,
 		tap: tap,
-        end: run,
-        run: run,
+        end: end,
     }
 
 }
 
 exports.State = State;
-exports.Momon = Momon;
+exports.Mond = Mond;
 

@@ -1,6 +1,6 @@
 {
-  "name": "momon",
-  "version": "0.3.0",
+  "name": "mond",
+  "version": "0.4.0",
   "description": "Model Monad",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/divsense/momon.git"
+    "url": "git+https://github.com/divsense/mond.git"
   },
   "keywords": [
     "model",
@@ -17,7 +17,7 @@
   "author": "Divsense",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/divsense/momon/issues"
+    "url": "https://github.com/divsense/mond/issues"
   },
-  "homepage": "https://github.com/divsense/momon#readme"
+  "homepage": "https://github.com/divsense/mond#readme"
 }
