@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/divsense/mond/issues"
   },
-  "homepage": "https://github.com/divsense/mond#readme"
+  "homepage": "https://github.com/divsense/mond#readme",
+  "dependencies": {
+    "ramda": "^0.21.0"
+  }
 }
