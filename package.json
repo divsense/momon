@@ -21,6 +21,10 @@
   },
   "homepage": "https://github.com/divsense/mond#readme",
   "dependencies": {
-    "ramda": "^0.21.0"
+    "ramda": "^0.21.0",
+    "ramda-fantasy": "^0.7.0"
+  },
+  "devDependencies": {
+    "ava": "^0.16.0"
   }
 }

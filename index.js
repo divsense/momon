@@ -30,6 +30,8 @@ State.read = f => State( model => [ f(model), model ] );
 
 State.write = f => State( model => f(model) );
 
+State.modify = f => State( model => f(model) );
+
 function Mond( x ){
 
     var model = x;
@@ -53,6 +55,10 @@ function Mond( x ){
     var read = R.curry((fn, state) => R.chain(val => State.read(model => fn(val, model)), state));
     var write = R.curry((fn, state) => R.chain(val => State.write(model => [val, fn(val, model)]), state));
 
+	var modify = R.curry((fn, state) => R.chain(value => State.write(model => { const res = fn({model, value}); return res ? [ res.value || value, res.model || model] : [value,model] }), state));
+
+	var cycle = fn => R.compose( end, modify(fn), begin );
+
     return {
 		begin: begin,
         read: read,
@@ -60,6 +66,9 @@ function Mond( x ){
 		update: update,
 		tap: tap,
         end: end,
+		modify: modify,
+		cycle: cycle,
+
     }
 
 }
