@@ -1,4 +1,5 @@
 var R = require( "ramda" );
+var Tuple = require( "ramda-fantasy" ).Tuple;
 
 function State(run){
     if (!(this instanceof State)) {
@@ -59,6 +60,12 @@ function Mond( x ){
 
 	var cycle = fn => R.compose( end, modify(fn), begin );
 
+    var _pull = R.curry((fn, state) => R.chain(val => State.read(model => Tuple.snd(fn(Tuple(model, val)))), state));
+	var pull = fn => R.compose( end, _pull(fn), begin );
+
+    var _push = R.curry((fn, state) => R.chain(val => State.write(model => [val, Tuple.snd(fn(Tuple(val, model)))]), state));
+	var push = fn => R.compose( end, _push(fn), begin );
+
     return {
 		begin: begin,
         read: read,
@@ -68,6 +75,8 @@ function Mond( x ){
         end: end,
 		modify: modify,
 		cycle: cycle,
+		pull: pull,
+		push: push
 
     }
 
