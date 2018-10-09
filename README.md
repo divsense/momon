@@ -1,5 +1,3 @@
 # mond
-Model as a wrapper around State Monad
-
-
+State and StatePromise Monad for Javascript applications
 
