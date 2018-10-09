@@ -1,6 +1,6 @@
 {
   "name": "mond",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "State and StatePromise Monad",
   "main": "index.js",
   "scripts": {
