@@ -32,15 +32,15 @@ State.read = f => State( state => [ f(state), state ] );
 
 State.write = f => State( state => f(state) );
 
-exports.mondWrite = fn => value => State.write(state => [value, fn(value)(state)])
-exports.mondWriteProp = p => fn => value => State.write(state => [value, over(lensProp(p), fn(value), state)])
+exports.write = fn => value => State.write(state => [value, fn(value)(state)])
+exports.writeProp = p => fn => value => State.write(state => [value, over(lensProp(p), fn(value), state)])
 
-exports.mondRead = fn => value => State.read(state => fn(value)(state))
-exports.mondReadProp = p => fn => value => State.read(state => fn(value)(prop(p, state)))
+exports.read = fn => value => State.read(state => fn(value)(state))
+exports.readProp = p => fn => value => State.read(state => fn(value)(prop(p, state)))
 
-exports.mondLift = fn => value => State.of(fn(value))
-exports.mondTap = fn => value => {fn(value); return State.of(value)}
-exports.mondOf = value => State.of(value)
+exports.lift = fn => value => State.of(fn(value))
+exports.tap = fn => value => {fn(value); return State.of(value)}
+exports.of = value => State.of(value)
 
 //
 // StatePromise Monad
@@ -78,23 +78,23 @@ StatePromise.read = fp => StatePromise(async state => {
 
 StatePromise.write = fp => StatePromise(state => fp(state));
 
-exports.mondWriteP = fp => value => StatePromise.write(async state => {
+exports.writeP = fp => value => StatePromise.write(async state => {
     const _state_ = await fp(value)(state)
     return [value, _state_]
 })
 
-exports.mondWritePropP = p => fp => value => StatePromise.write(async state => {
+exports.writePropP = p => fp => value => StatePromise.write(async state => {
     const _prop_ = await fp(value)(view(lensProp(p), state))
     return [value, set(lensProp(p), _prop_, state)]
 })
 
-exports.mondReadP = fp => value => StatePromise.read(state => fp(value)(state))
-exports.mondReadPropP = p => fn => value => StatePromise.read(state => fn(value)(view(lensProp(p), state)))
+exports.readP = fp => value => StatePromise.read(state => fp(value)(state))
+exports.readPropP = p => fn => value => StatePromise.read(state => fn(value)(view(lensProp(p), state)))
 
-exports.mondLiftP = fn => value => StatePromise.of(fn(value))
+exports.liftP = fn => value => StatePromise.of(fn(value))
 
-exports.mondTapP = fn => value => {fn(value); return StatePromise.of(value)}
-exports.mondOfP = value => StatePromise.of(value)
+exports.tapP = fn => value => {fn(value); return StatePromise.of(value)}
+exports.ofP = value => StatePromise.of(value)
 
 //
 // init

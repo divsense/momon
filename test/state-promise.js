@@ -1,6 +1,6 @@
 import test from 'ava';
 import R from 'ramda';
-import {init, mondReadP, mondWriteP, mondReadPropP, mondWritePropP, mondOfP, mondLiftP} from '../index.js'
+import {init, readP, writeP, readPropP, writePropP, ofP, liftP} from '../index.js'
 
 var mond
 const state0 = {a: 4, b: 'foo'}
@@ -19,8 +19,8 @@ test.beforeEach('init', t => {
     mond = init(state0)
 })
 
-test('mondOfP', async t => {
-    const x = mondOfP(1)
+test('ofP', async t => {
+    const x = ofP(1)
 
     const [v,s] = await mond.evalP(x)
 
@@ -30,24 +30,24 @@ test('mondOfP', async t => {
 });
 
 
-test('mondLiftP', async t => {
-    const mf = mondLiftP(a => a + 1)
+test('liftP', async t => {
+    const mf = liftP(a => a + 1)
 
     const x = await mond.runP(mf(2))
 
     t.is(x, 3);
 });
 
-test('mondReadP', async t => {
-    const mfp = mondReadP(a => state => delayed(a + state.a))
+test('readP', async t => {
+    const mfp = readP(a => state => delayed(a + state.a))
 
     const x = await mond.runP(mfp(2))
 
     t.is(x, 6);
 });
 
-test('mondWriteP', async t => {
-    const mfp = mondWriteP(k => state => delayed(R.over(R.lensProp('a'), R.add(k), state)))
+test('writeP', async t => {
+    const mfp = writeP(k => state => delayed(R.over(R.lensProp('a'), R.add(k), state)))
 
     const [v, s] = await mond.evalP(mfp(2))
 
@@ -59,7 +59,7 @@ test('rejected', t => {
 
     t.plan(1)
 
-    const mfp = mondWriteP(rejection)
+    const mfp = writeP(rejection)
 
     return mond.evalP(mfp(2))
         .then(([v, s]) => { })
@@ -69,9 +69,9 @@ test('rejected', t => {
 
 });
 
-test('mondReadProp', async t => {
+test('readProp', async t => {
 
-    const readB = mondReadPropP('b')
+    const readB = readPropP('b')
 
     const mf = readB(k => state => delayed(R.concat(k, state)))
 
@@ -84,9 +84,9 @@ test('composition-1', async t => {
 
     const addDelayed = x => y => delayed(x + y)
 
-    const addA = mondReadPropP('a')(addDelayed)
+    const addA = readPropP('a')(addDelayed)
 
-    const add3 = x => mondOfP(x + 3)
+    const add3 = x => ofP(x + 3)
 
     const mc = R.composeK(add3, addA)
 
@@ -99,13 +99,13 @@ test('composition-2', async t => {
     const addDelayed = x => y => delayed(x + y)
     const concatDelayed = x => y => delayed(R.concat(x,y))
 
-    const readAddA = mondReadPropP('a')(addDelayed)
+    const readAddA = readPropP('a')(addDelayed)
 
     const toString = x => String(x)
 
-    const writeConcatB = mondWritePropP('b')(concatDelayed)
+    const writeConcatB = writePropP('b')(concatDelayed)
 
-    const mc = R.composeK(writeConcatB, mondLiftP(toString), readAddA)
+    const mc = R.composeK(writeConcatB, liftP(toString), readAddA)
 
     const [v, s] = await mond.evalP(mc(2))
 
@@ -119,9 +119,9 @@ test('composition-reject', t => {
 
     const concatDelayed = x => y => delayed(R.concat(x,y))
 
-    const readAddA = mondReadPropP('a')(rejection)
-    const toString = mondLiftP(x => String(x))
-    const writeConcatB = mondWritePropP('b')(concatDelayed)
+    const readAddA = readPropP('a')(rejection)
+    const toString = liftP(x => String(x))
+    const writeConcatB = writePropP('b')(concatDelayed)
 
     const mc = R.composeK(writeConcatB, toString, readAddA)
 
@@ -136,13 +136,13 @@ test('composition-timing', async t => {
     const addDelayed = x => y => delayed(x + y)
     const concatDelayed = x => y => delayed(R.concat(x,y))
 
-    const readAddA = mondReadPropP('a')(addDelayed)
+    const readAddA = readPropP('a')(addDelayed)
 
     const toString = x => String(x)
 
-    const writeConcatB = mondWritePropP('b')(concatDelayed)
+    const writeConcatB = writePropP('b')(concatDelayed)
 
-    const mc = R.composeK(writeConcatB, mondLiftP(toString), readAddA)
+    const mc = R.composeK(writeConcatB, liftP(toString), readAddA)
 
     const [v, s] = await mond.evalP(mc(2))
 
