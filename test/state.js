@@ -1,6 +1,6 @@
 import test from 'ava';
 import R from 'ramda';
-import {init, read, write, readProp, writeProp, of, lift, mondTap} from '../index.js'
+import {init, read, write, readProp, writeProp, pure, tap, mapM} from '../index.js'
 
 var mond
 const state0 = {a: 4, b: 'foo'}
@@ -9,8 +9,8 @@ test.beforeEach('init', t => {
     mond = init(state0)
 })
 
-test('of', t => {
-    const x = of(1)
+test('pure', t => {
+    const x = pure(1)
 
     const [v,s] = mond.eval(x)
 
@@ -19,8 +19,8 @@ test('of', t => {
     t.deepEqual(s, state0)
 });
 
-test('lift', t => {
-    const mf = lift(a => a + 1)
+test('map', t => {
+    const mf = R.composeK(mapM(a => a + 1), pure)
 
     const x = mond.run(mf(2))
 
@@ -28,19 +28,17 @@ test('lift', t => {
 });
 
 test('read', t => {
-    const mf = read(a => state => a + state.a)
 
-    const x = mond.run(mf(2))
+    const x = mond.run(read())
 
-    t.is(x, 6);
+    t.deepEqual(x, state0);
 });
 
 test('write', t => {
-    const mf = write(k => R.over(R.lensProp('a'), R.add(k)))
+    const mf = R.composeK(write, mapM(R.over(R.lensProp('a'), R.add(2))), read)
 
-    const [v, s] = mond.eval(mf(2))
+    const [v, s] = mond.eval(mf())
 
-    t.is(v, 2);
     t.deepEqual(s, {a: 6, b: 'foo'})
 });
 
@@ -48,35 +46,29 @@ test('readProp', t => {
 
     const readB = readProp('b')
 
-    const mf = readB(k => R.concat(k))
+    const v = mond.run(readB())
 
-    const v = mond.run(mf('bar'))
-
-    t.is(v, 'barfoo')
+    t.is(v, 'foo')
 });
 
-test('composition-1', t => {
+test('writeProp', t => {
 
-    const addA = readProp('a')(R.add)
+    const writeB = writeProp('b')
 
-    const mc = R.composeK(x => of(x + 3), addA)
+    const [_, s] = mond.eval(writeB('bar'))
 
-    const v = mond.run(mc(10))
-
-    t.is(v, 17)
+    t.deepEqual(s, {a: 4, b: 'bar'})
 });
 
-test('composition-2', t => {
+test('ap', t => {
 
-    const readAddA = readProp('a')(R.add)
-    const toString = lift(x => String(x))
-    const writeConcatB = writeProp('b')(R.concat)
+    const readA = readProp('a')
+    const addM = pure(x => y => x + y)
 
-    const mc = R.composeK(writeConcatB, toString, readAddA)
+    const mc = addM.ap(readA()).ap(pure(7))
 
-    const [v, s] = mond.eval(mc(2))
+    const v = mond.run(mc)
 
-    t.is(v, '6')
-    t.is(s.b, '6foo')
+    t.is(v, 11)
 });
 

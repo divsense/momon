@@ -1,4 +1,4 @@
-const {prop, over, set, view, lensProp} = require('ramda')
+const {prop, over, map, set, view, lensProp} = require('ramda')
 //
 // State Monad
 //
@@ -20,27 +20,33 @@ State.prototype.chain = function(f){
 
 State.prototype.map = function(f) {
     return this.chain(function(a) {
-        return State.of(f(a));
+        return State.pure(f(a));
     });
 };
 
-State.prototype.of = val => State( state => [val, state] )
+State.prototype.ap = function(thatState) {
+    return this.chain(function(f) {
+        return thatState.map(f);
+    });
+};
 
-State.of = State.prototype.of;
+State.prototype.pure = val => State( state => [val, state] )
+
+State.pure = State.prototype.pure;
 
 State.read = f => State( state => [ f(state), state ] );
 
 State.write = f => State( state => f(state) );
 
-exports.write = fn => value => State.write(state => [value, fn(value)(state)])
-exports.writeProp = p => fn => value => State.write(state => [value, over(lensProp(p), fn(value), state)])
+exports.read = () => State.read(state => state)
+exports.readProp = p => () => State.read(state => prop(p, state))
 
-exports.read = fn => value => State.read(state => fn(value)(state))
-exports.readProp = p => fn => value => State.read(state => fn(value)(prop(p, state)))
+exports.write = value => State.write(state => [value, value])
+exports.writeProp = p => value => State.write(state => [value, set(lensProp(p), value, state)])
 
-exports.lift = fn => value => State.of(fn(value))
-exports.tap = fn => value => {fn(value); return State.of(value)}
-exports.of = value => State.of(value)
+exports.pure = State.pure
+exports.tap = fn => value => {fn(value); return State.pure(value)}
+exports.mapM = f => value => State.pure(f(value))
 
 //
 // StatePromise Monad
@@ -62,14 +68,22 @@ StatePromise.prototype.chain = function(fp){
 }
 
 StatePromise.prototype.map = function(f) {
-    return this.chain(function(a) {
-        return StatePromise.of(f(a));
+    return this.chain(function(value) {
+        return StatePromise.pure(f(value));
     });
 };
 
-StatePromise.prototype.of = val => StatePromise( state => Promise.resolve([val, state]) )
+StatePromise.prototype.ap = function(thatState) {
+    return this.chain(function(f) {
+        return thatState.map(f);
+    });
+};
 
-StatePromise.of = StatePromise.prototype.of;
+StatePromise.prototype.pure = val => StatePromise(state => Promise.resolve([val, state]))
+StatePromise.prototype.fail = val => StatePromise(_ => Promise.reject(val))
+
+StatePromise.pure = StatePromise.prototype.pure;
+StatePromise.fail = StatePromise.prototype.fail;
 
 StatePromise.read = fp => StatePromise(async state => {
     const value = await fp(state)
@@ -78,23 +92,21 @@ StatePromise.read = fp => StatePromise(async state => {
 
 StatePromise.write = fp => StatePromise(state => fp(state));
 
-exports.writeP = fp => value => StatePromise.write(async state => {
-    const _state_ = await fp(value)(state)
-    return [value, _state_]
-})
+exports.writeP = value => StatePromise.write(_ => Promise.resolve([value, value]))
 
-exports.writePropP = p => fp => value => StatePromise.write(async state => {
-    const _prop_ = await fp(value)(view(lensProp(p), state))
-    return [value, set(lensProp(p), _prop_, state)]
-})
+exports.writePropP = p => value => StatePromise.write(state => Promise.resolve([value, set(lensProp(p), value, state)]))
 
-exports.readP = fp => value => StatePromise.read(state => fp(value)(state))
-exports.readPropP = p => fn => value => StatePromise.read(state => fn(value)(view(lensProp(p), state)))
+exports.readP = () => StatePromise.read(state => Promise.resolve(state))
+exports.readPropP = p => () => StatePromise.read(state => Promise.resolve(view(lensProp(p), state)))
 
-exports.liftP = fn => value => StatePromise.of(fn(value))
+exports.tapP = fn => value => {fn(value); return StatePromise.pure(value)}
+exports.pureP = StatePromise.pure
+exports.failP = StatePromise.fail
 
-exports.tapP = fn => value => {fn(value); return StatePromise.of(value)}
-exports.ofP = value => StatePromise.of(value)
+exports.mapP = fp => value => StatePromise.pure(fp(value))
+exports.mapPromise = fp => value => StatePromise(async state => [await fp(value), state]) 
+exports.mapPromiseAll = fp => values => StatePromise(state => Promise.all(map(fp, values)).then(xs => [xs, state]))
+exports.mapPromiseAny = fp => values => StatePromise(state => Promise.race(map(fp, values)).then(xs => [xs, state]))
 
 //
 // init
